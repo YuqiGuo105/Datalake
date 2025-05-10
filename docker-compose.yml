@@ -1,0 +1,31 @@
+version: "3.9"
+services:
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minio
+      MINIO_ROOT_PASSWORD: minio123
+    ports: [ "9000:9000", "9001:9001" ]
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.2
+    environment:
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+    ports: [ "9092:9092" ]
+    depends_on: [ zookeeper ]
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.2
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+    ports: [ "2181:2181" ]
+
+  mysql:
+    image: mysql:8
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: metadata
+    ports: [ "3306:3306" ]
+
