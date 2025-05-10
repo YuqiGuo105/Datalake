@@ -1,0 +1,74 @@
+version: "3.9"
+
+services:
+  # ────────────────────────────────────────────────────────────────
+  # Database: MySQL 8.x
+  # ────────────────────────────────────────────────────────────────
+  mysql:
+    image: mysql:8.3          # pin to an 8.x tag you trust
+    container_name: metadata-mysql
+    hostname: mysql           # matches host in your JDBC URL
+    restart: unless-stopped
+
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword   # change in production
+      MYSQL_DATABASE: metadata            # pre‑creates schema
+      MYSQL_USER: metadata
+      MYSQL_PASSWORD: password
+      TZ: UTC
+
+    volumes:
+      - mysql_data:/var/lib/mysql         # durable data
+
+    # Recommended UTF‑8 settings + native auth plugin
+    command:
+      [
+        "--character-set-server=utf8mb4",
+        "--collation-server=utf8mb4_unicode_ci",
+        "--default-authentication-plugin=mysql_native_password"
+      ]
+
+    ports:
+      - "3306:3306"
+
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ────────────────────────────────────────────────────────────────
+  # Object storage: MinIO
+  # ────────────────────────────────────────────────────────────────
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: minio
+      MINIO_ROOT_PASSWORD: minio123
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+
+  # ────────────────────────────────────────────────────────────────
+  # Messaging: Kafka + Zookeeper (Confluent images)
+  # ────────────────────────────────────────────────────────────────
+  kafka:
+    image: confluentinc/cp-kafka:7.5.2
+    environment:
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+    ports:
+      - "9092:9092"
+    depends_on:
+      - zookeeper
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.2
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+    ports:
+      - "2181:2181"
+
+volumes:
+  mysql_data:
