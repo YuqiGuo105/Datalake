@@ -31,8 +31,4 @@ public class DataSet {
     private String createdBy;
     @Column(name = "last_commit_id", length = 36)
     private String lastCommitId;
-    @OneToMany(mappedBy = "dataset", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<Commit> commits = new HashSet<>();
-    @OneToMany(mappedBy = "dataset", cascade = CascadeType.ALL, orphanRemoval = true)
-    private Set<DataSetColumn> columns = new HashSet<>();
 }
