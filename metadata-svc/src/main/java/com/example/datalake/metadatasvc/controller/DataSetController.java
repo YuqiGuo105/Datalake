@@ -5,6 +5,7 @@ import com.example.datalake.metadatasvc.dto.*;
 import com.example.datalake.metadatasvc.service.MetaService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.enums.ParameterIn;
 import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -63,8 +64,11 @@ public class DataSetController {
     @PostMapping("/{id}/commits")
     @ResponseStatus(HttpStatus.NO_CONTENT)  // 204，No response
     public void commit(
-            @Parameter(description = "Dataset ID", required = true)
-            @PathVariable String id,
+            @Parameter(name = "id",
+                    in = ParameterIn.PATH,
+                    description = "Dataset ID",
+                    required = true)
+            @PathVariable("id") String id,
             @Parameter(description = "Commit details", required = true)
             @Valid @RequestBody CommitRequest body,
             @Parameter(description = "Username performing the action", required = true)
@@ -84,10 +88,19 @@ public class DataSetController {
     })
     @GetMapping("/{id}/schema")
     public List<ColumnDTO> getSchema(
-            @Parameter(description = "Dataset ID", required = true)
-            @PathVariable String id,
-            @Parameter(description = "Schema version (optional)")
-            @RequestParam(required = false) Integer version) {
+            @Parameter(
+                    name = "id",
+                    in = ParameterIn.PATH,
+                    description = "Dataset ID",
+                    required = true
+            )
+            @PathVariable("id") String id,
+            @Parameter(
+                    name = "version",
+                    in = ParameterIn.QUERY,
+                    description = "Schema version (optional)"
+            )
+            @RequestParam(name = "version", required = false) Integer version) {
 
         return metaService.getSchema(id, version);   // return json
     }
