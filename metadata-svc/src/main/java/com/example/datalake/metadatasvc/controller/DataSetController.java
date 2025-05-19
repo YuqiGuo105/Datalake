@@ -105,6 +105,13 @@ public class DataSetController {
         return metaService.getSchema(id, version);   // return json
     }
 
+    @PostMapping("/{id}/ingestions")
+    public ResponseEntity<Void> registerIngestion(@PathVariable String id,
+                                                  @RequestBody FileMetadataRequest body) {
+        metaService.registerIngestion(id, body);   // see next section
+        return ResponseEntity.ok().build();
+    }
+
     @Operation(
             summary = "List all datasets",
             description = "Returns a list of all registered datasets."

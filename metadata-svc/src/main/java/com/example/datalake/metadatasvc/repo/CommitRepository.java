@@ -10,4 +10,7 @@ public interface CommitRepository extends JpaRepository<Commit, String> {
     Optional<Commit> findFirstByDatasetIdOrderByVersionDesc(String datasetId);
     @Query("select c.version from Commit c where c.id = ?1")
     Integer findVersionById(String commitId);
+
+    Optional<Commit> findTopByDatasetIdOrderByVersionDesc(String datasetId);
+
 }

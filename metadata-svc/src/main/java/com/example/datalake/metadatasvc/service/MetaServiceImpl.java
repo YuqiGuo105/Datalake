@@ -1,9 +1,6 @@
 package com.example.datalake.metadatasvc.service;
 
-import com.example.datalake.metadatasvc.dto.ColumnDTO;
-import com.example.datalake.metadatasvc.dto.DataSetDTO;
-import com.example.datalake.metadatasvc.dto.DataSetMapper;
-import com.example.datalake.metadatasvc.dto.NewDataSetDTO;
+import com.example.datalake.metadatasvc.dto.*;
 import com.example.datalake.metadatasvc.model.Commit;
 import com.example.datalake.metadatasvc.model.DataSet;
 import com.example.datalake.metadatasvc.model.DataSetColumn;
@@ -18,6 +15,7 @@ import org.springframework.beans.BeanUtils;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -97,6 +95,51 @@ public class MetaServiceImpl implements MetaService{
                     return dto;
                 })
                 .collect(Collectors.toList());
+    }
+
+    /**
+     * Registers the arrival of a new data-file by creating one Commit row
+     * and updating the owning DataSet’s lastCommitId reference.
+     *
+     * @param datasetId UUID string of the target DataSet
+     * @param req       payload coming from ingestion-svc
+     * @throws IllegalArgumentException if no DataSet exists for the id
+     */
+    @Transactional
+    @Override
+    public void registerIngestion(String datasetId, FileMetadataRequest req) {
+
+        /* -------- 1. Ensure the DataSet exists -------- */
+        DataSet dataSet = dataSetRepo.findById(datasetId)
+                .orElseThrow(() ->
+                        new IllegalArgumentException("Dataset " + datasetId + " not found"));
+
+        /* -------- 2. Calculate next sequential version -------- */
+        Integer lastVersion = commitRepo
+                .findTopByDatasetIdOrderByVersionDesc(datasetId)  // may return null
+                .map(Commit::getVersion)
+                .orElse(null);
+        int nextVersion = lastVersion == null ? 1 : lastVersion + 1;
+
+        /* -------- 3. Persist the Commit -------- */
+        Commit c  = new Commit();
+        c.setDatasetId(datasetId);
+        c.setVersion(nextVersion);
+        c.setCommitTime(req.ingestedAt());
+        c.setAuthor(req.userId());      // real user
+        c.setMessage("Auto-ingest " + req.fileName());
+        c.setExtraMeta(Map.of(
+                "fileName",  req.fileName(),
+                "path",      req.path(),
+                "sizeBytes", req.sizeBytes()
+        ));
+
+        commitRepo.save(c);
+
+        /* -------- 4. Update DataSet aggregate -------- */
+        dataSet.setLastCommitId(c.getId());
+        dataSet.setStorageUri(req.path());
+        dataSetRepo.save(dataSet);
     }
 
     @Override
