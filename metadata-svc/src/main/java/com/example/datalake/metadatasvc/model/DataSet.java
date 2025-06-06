@@ -25,6 +25,8 @@ public class DataSet {
     private String format;
     @Column(length = 64)
     private String project;
+    @Column(name = "group_id", length = 64, nullable = false)
+    private String groupId;
     @Column(name = "created_at", nullable = false)
     private Instant createdAt = Instant.now();
     @Column(name = "created_by", length = 64)

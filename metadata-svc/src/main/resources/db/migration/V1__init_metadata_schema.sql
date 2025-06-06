@@ -8,6 +8,7 @@ CREATE TABLE datasets (
                           storage_uri     VARCHAR(1024) NOT NULL,
                           format          VARCHAR(16)   NOT NULL,
                           project         VARCHAR(64),
+                          group_id VARCHAR(64) NOT NULL,
                           created_at      DATETIME(6)   NOT NULL,
                           created_by      VARCHAR(64),
                           last_commit_id  VARCHAR(36)
