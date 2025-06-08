@@ -19,30 +19,4 @@ public class User {
 
     @Column(name = "\"userName\"")
     private String userName;
-
-    public User() {
-    }
-
-    public User(Short userId, String userName) {
-        this.userId = userId;
-        this.userName = userName;
-    }
-
-    // ─── Getter / Setter for userId ─────────────────────────────────────────
-    public Short getUserId() {
-        return userId;
-    }
-
-    public void setUserId(Short userId) {
-        this.userId = userId;
-    }
-
-    // ─── Getter / Setter for userName ────────────────────────────────────────
-    public String getUserName() {
-        return userName;
-    }
-
-    public void setUserName(String userName) {
-        this.userName = userName;
-    }
 }
